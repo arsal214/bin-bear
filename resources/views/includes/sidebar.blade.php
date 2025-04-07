@@ -64,6 +64,10 @@
                     </x-nav-item>
                 @endcanany
 
+                
+                @can('coupons-list')
+                <x-nav-item route="coupons.index" active="coupons.*" icon="gift" title="Coupons"/>
+                 @endcan
                 @canany(['blogs-list'])
                     <x-nav-item active="pages.*" icon="house" title="Pages" :submenu="true">
                        

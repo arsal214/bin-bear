@@ -123,138 +123,6 @@ class PermissionsSeeder extends Seeder
             ],
 
 
-            /* ---------------------------------- AdminSetting --------------------------------- */
-            [
-                'name' => 'adminSettings-list',
-                'display_name' => 'adminSettings List',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'adminSettings-create',
-                'display_name' => 'adminSettings Create',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'adminSettings-edit',
-                'display_name' => 'adminSettings Edit',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'adminSettings-delete',
-                'display_name' => 'adminSettings Delete',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-
-            /* ---------------------------------- Product Category --------------------------------- */
-            [
-                'name' => 'productCategory-list',
-                'display_name' => 'productCategory List',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'productCategory-create',
-                'display_name' => 'productCategory Create',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'productCategory-edit',
-                'display_name' => 'productCategory Edit',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'productCategory-delete',
-                'display_name' => 'productCategory Delete',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-
-
-             /* ---------------------------------- services Permission --------------------------------- */
-            [
-                'name' => 'products-list',
-                'display_name' => 'products List',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'products-create',
-                'display_name' => 'products Create',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'products-edit',
-                'display_name' => 'products Edit',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'products-view',
-                'display_name' => 'products Edit',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'products-delete',
-                'display_name' => 'products Delete',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-
-
-
-
-
-            /* ---------------------------------- aboutUs --------------------------------- */
-            [
-                'name' => 'aboutUs-list',
-                'display_name' => 'About Us List',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'aboutUs-create',
-                'display_name' => 'About Us Create',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'aboutUs-edit',
-                'display_name' => 'About Us Edit',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'aboutUs-delete',
-                'display_name' => 'About Us Delete',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-
 
             /* ---------------------------------- blogs --------------------------------- */
             [
@@ -288,135 +156,35 @@ class PermissionsSeeder extends Seeder
 
 
 
-            /* ---------------------------------- hompage --------------------------------- */
+            /* ---------------------------------- coupons --------------------------------- */
             [
-                'name' => 'homepage-list',
-                'display_name' => 'homepage List',
+                'name' => 'coupons-list',
+                'display_name' => 'coupons List',
                 'guard_name' => 'web',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],
             [
-                'name' => 'homepage-create',
-                'display_name' => 'homepage  Create',
+                'name' => 'coupons-create',
+                'display_name' => 'coupons  Create',
                 'guard_name' => 'web',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],
             [
-                'name' => 'homepage-edit',
-                'display_name' => 'homepage Edit',
+                'name' => 'coupons-edit',
+                'display_name' => 'coupons Edit',
                 'guard_name' => 'web',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],
             [
-                'name' => 'homepage-delete',
-                'display_name' => 'homepage Delete',
+                'name' => 'coupons-delete',
+                'display_name' => 'coupons Delete',
                 'guard_name' => 'web',
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now()
             ],
-
-
-
-
-
-
-            /* ---------------------------------- faqs --------------------------------- */
-            [
-                'name' => 'faqs-list',
-                'display_name' => 'faqs List',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'faqs-create',
-                'display_name' => 'faqs  Create',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'faqs-edit',
-                'display_name' => 'faqs Edit',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'faqs-delete',
-                'display_name' => 'faqs Delete',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-
-
-            /* ---------------------------------- privacy policy --------------------------------- */
-            [
-                'name' => 'privacyPolicy-list',
-                'display_name' => 'privacyPolicy List',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'privacyPolicy-create',
-                'display_name' => 'privacyPolicy  Create',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'privacyPolicy-edit',
-                'display_name' => 'privacyPolicy Edit',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'privacyPolicy-delete',
-                'display_name' => 'privacyPolicy Delete',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-
-
-            /* ---------------------------------- term conditions --------------------------------- */
-            [
-                'name' => 'termConditions-list',
-                'display_name' => 'termConditions List',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'termConditions-create',
-                'display_name' => 'termConditions  Create',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'termConditions-edit',
-                'display_name' => 'termConditions Edit',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-            [
-                'name' => 'termConditions-delete',
-                'display_name' => 'termConditions Delete',
-                'guard_name' => 'web',
-                'created_at' => Carbon::now(),
-                'updated_at' => Carbon::now()
-            ],
-
-
-
         ]);
     }
 }
