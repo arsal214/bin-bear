@@ -21,11 +21,6 @@ class Coupon extends Model
     ];
 
 
-    public function plans()
-    {
-        return $this->hasMany(Plan::class, 'coupon_id');
-    }
-
     protected $hidden = [
         'created_at',
         'updated_at',
