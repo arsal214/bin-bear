@@ -4,24 +4,22 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
-use App\Interfaces\CouponRepositoryInterface;
-use App\Traits\UploadTrait;
+use App\Interfaces\ZipCodeRepositoryInterface;
+use Illuminate\Http\Request;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
-class CouponController extends BaseController
+class ZipCodeController extends BaseController
 {
-    use UploadTrait;
 
     public function __construct(
-        private CouponRepositoryInterface $couponRepository,
+        private ZipCodeRepositoryInterface $zipCodeRepository,
     ) {
-       $this->middleware('permission:coupons-list', ['only' => ['index', 'show']]);
-       $this->middleware('permission:coupons-create', ['only' => ['create', 'store']]);
-       $this->middleware('permission:coupons-edit', ['only' => ['edit', 'update', 'popular']]);
-       $this->middleware('permission:coupons-delete', ['only' => ['destroy']]);
+    //    $this->middleware('permission:zipCodes-list', ['only' => ['index', 'show']]);
+    //    $this->middleware('permission:zipCodes-create', ['only' => ['create', 'store']]);
+    //    $this->middleware('permission:zipCodes-edit', ['only' => ['edit', 'update', 'popular']]);
+    //    $this->middleware('permission:zipCodes-delete', ['only' => ['destroy']]);
     }
 
 
@@ -30,7 +28,7 @@ class CouponController extends BaseController
      */
     public function index(): View
     {
-        return view('pages.coupon.index');
+        return view('pages.zipCode.index');
     }
 
     /**
@@ -38,11 +36,11 @@ class CouponController extends BaseController
      */
     public function list(): JsonResponse
     {
-        $data = $this->couponRepository->list();
+        $data = $this->zipCodeRepository->list();
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('action', function ($row) {
-                return view('pages.coupon.actions.actions', compact('row'));
+                return view('pages.zipCode.actions.actions', compact('row'));
             })
             ->rawColumns(['action',])
             ->make(true);
@@ -54,7 +52,7 @@ class CouponController extends BaseController
     public function create()
     {
 
-        return view('pages.coupon.create');
+        return view('pages.zipCode.create');
     }
 
     /**
@@ -64,34 +62,27 @@ class CouponController extends BaseController
     {
         try {
             $request->validate([
-                'name' => 'required',
+                'city_name' => 'required',
+                'zip_code' => 'required',
                 'status' => 'required',
             ]);
 
             $data = $request->all();
-            $this->couponRepository->storeOrUpdate($data);
+            $this->zipCodeRepository->storeOrUpdate($data);
         } catch (\Throwable $th) {
             return redirect()->back()->withErrors(['msg' => $th->getMessage()]);
         }
-        return $this->redirectSuccess(route('coupons.index'), 'COupon created successfully.');
+        return $this->redirectSuccess(route('zip-codes.index'), 'Zip Code created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $coupon = $this->couponRepository->findById($id);
-        return view('content.coupon.show', compact('coupon'));
-    }
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
     {
-        $coupon = $this->couponRepository->findById($id);
-        return view('pages.coupon.edit', compact('coupon'));
+        $coupon = $this->zipCodeRepository->findById($id);
+        return view('pages.zipCode.edit', compact('coupon'));
     }
 
     /**
@@ -101,16 +92,17 @@ class CouponController extends BaseController
     {
         try {
             $request->validate([
-                'name' => 'required',
+                'city_name' => 'required',
+                'zip_code' => 'required',
                 'status' => 'required',
             ]);
 
             $data = $request->all();
-            $this->couponRepository->storeOrUpdate($data, $id);
+            $this->zipCodeRepository->storeOrUpdate($data, $id);
         } catch (\Throwable $th) {
             return redirect()->back()->withErrors(['msg' => $th->getMessage()]);
         }
-        return $this->redirectSuccess(route('coupons.index'), 'Coupon updated successfully.');
+        return $this->redirectSuccess(route('zip-codes.index'), 'Data updated successfully.');
     }
 
     /**
@@ -119,12 +111,12 @@ class CouponController extends BaseController
     public function destroy(string $id)
     {
         try {
-            $coupon = $this->couponRepository->findById($id);
+            $coupon = $this->zipCodeRepository->findById($id);
             $coupon->delete();
         } catch (\Throwable $th) {
             return $this->redirectError($th->getMessage());
         }
-        return  $this->redirectSuccess(route('coupons.index'), 'Coupon deleted successfully');
+        return  $this->redirectSuccess(route('zip-codes.index'), 'Data deleted successfully');
     }
 
 }

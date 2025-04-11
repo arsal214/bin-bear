@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\BlogController;
 use App\Http\Controllers\API\CouponController;
+use App\Http\Controllers\API\ZipCodeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +26,7 @@ Route::get('blog/is-popular', [BlogController::class, 'isPopular']);
 
 
 Route::apiResource('coupons', CouponController::class);
+Route::apiResource('zip-codes', ZipCodeController::class);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

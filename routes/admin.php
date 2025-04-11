@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\ZipCodeController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -55,6 +56,13 @@ Route::prefix('users')->as('users.')->group(function () {
  */
 Route::get('coupons/list', 'CouponController@list')->name('coupons.list');
 Route::resource('coupons', CouponController::class)->except('show');
+
+
+/**
+ * Zip Routes.
+ */
+Route::get('zip-codes/list', 'ZipCodeController@list')->name('zip-codes.list');
+Route::resource('zip-codes', ZipCodeController::class)->except('show');
 
 
 

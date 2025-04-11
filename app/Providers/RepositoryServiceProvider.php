@@ -8,7 +8,7 @@ use App\Interfaces\{BlogRepositoryInterface,
     PermissionRepositoryInterface,
     RoleRepositoryInterface,
     CouponRepositoryInterface,
-    UserRepositoryInterface};
+    UserRepositoryInterface, ZipCodeRepositoryInterface};
 
 use App\Repositories\{
     PermissionRepository,
@@ -16,7 +16,8 @@ use App\Repositories\{
     BlogRepository,
     CouponRepository,
     UserRepository,
-    };
+    ZipCodeRepository,
+};
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -30,6 +31,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(RoleRepositoryInterface::class, RoleRepository::class);
         $this->app->bind(BlogRepositoryInterface::class, BlogRepository::class);
         $this->app->bind(CouponRepositoryInterface::class, CouponRepository::class);
+        $this->app->bind(ZipCodeRepositoryInterface::class, ZipCodeRepository::class);
 
     }
 
