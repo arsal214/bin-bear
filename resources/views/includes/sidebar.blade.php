@@ -37,7 +37,7 @@
                     <x-nav-item route="dashboard" icon="house" title="Dashboards"/>
                 @endcan
 
-                @can('roles-list')
+                {{-- @can('roles-list')
                     <x-nav-item active="roles.*" icon="user-focus" title="Roles" :submenu="true">
                         <x-nav-item route="roles.staff.index" active="roles.staff.*" title="Staff"/>
 
@@ -49,12 +49,12 @@
                         <x-nav-item route="permissions.staff.index" active="permissions.staff.*" title="Staff"/>
 
                     </x-nav-item>
-                @endcan
+                @endcan --}}
 
 
 
 
-                @canany(['users-list'])
+                {{-- @canany(['users-list'])
                     <x-nav-item active="users.*" icon="users-three" title="Users" :submenu="true">
                         @can('users-list')
                             <x-nav-item route="users.staff.index" active="users.staff.*"
@@ -62,7 +62,7 @@
                         @endcan
 
                     </x-nav-item>
-                @endcanany
+                @endcanany --}}
 
                 
                 @can('coupons-list')
