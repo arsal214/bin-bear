@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ZipCodeController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,6 +49,16 @@ Route::prefix('users')->as('users.')->group(function () {
 
 
 });
+
+
+Route::prefix('catalog')->as('catalog.')->group(function () {
+    /* -------------------------  Category Routes ------------------------ */
+    Route::patch('category/change/{id}', 'CategoryController@change')->name('category.change');
+    Route::get('category/list', 'CategoryController@list')->name('category.list');
+    Route::get('get-subcategories/{categoryId}', [CategoryController::class, 'getSubcategories']);
+    Route::resource('category', CategoryController::class);
+});
+
 
 
 

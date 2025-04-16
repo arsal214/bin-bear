@@ -83,6 +83,19 @@
 
                 @endcanany
 
+
+
+
+
+                <x-nav-item active="catalog.*" icon="notebook" title="Catalog" :submenu="true">
+                    
+                        <x-nav-item route="catalog.category.index" active="catalog.category.*"
+                                    title="Category"/>
+                    
+                </x-nav-item>
+
+            
+
             </ul>
 
         </div>
