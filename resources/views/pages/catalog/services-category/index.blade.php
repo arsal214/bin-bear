@@ -7,8 +7,17 @@
             <span class="btn-labeled-icon bg-primary text-white rounded-pill">
                 <i class="ph-plus"></i>
             </span>
-                Create New
+                Create New Category
             </a>
+            <div class="m-2">
+                <a href="{{ route('catalog.sub-category') }}"
+            class="btn btn-outline-primary btn-labeled btn-labeled-start rounded-pill">
+         <span class="btn-labeled-icon bg-primary text-white rounded-pill">
+             <i class="ph-plus"></i>
+         </span>
+             Create New Sub Category
+         </a>
+            </div>
         {{-- @endcan --}}
     </x-breadcrumb>
 
@@ -27,7 +36,6 @@
                             <th scope="col"></th>
                             <th scope="col">#</th>
                             <th scope="col">Name</th>
-                            <th scope="col">Status</th>
                             <th scope="col">Actions</th>
                         </tr>
                         </thead>

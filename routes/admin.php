@@ -56,6 +56,8 @@ Route::prefix('catalog')->as('catalog.')->group(function () {
     Route::patch('category/change/{id}', 'CategoryController@change')->name('category.change');
     Route::get('category/list', 'CategoryController@list')->name('category.list');
     Route::get('get-subcategories/{categoryId}', [CategoryController::class, 'getSubcategories']);
+    Route::get('sub-category', 'CategoryController@subCategory')->name('sub-category');
+    Route::post('sub-category', 'CategoryController@subCategoryStore')->name('sub-category');
     Route::resource('category', CategoryController::class);
 });
 

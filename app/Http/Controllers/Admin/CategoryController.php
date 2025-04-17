@@ -18,8 +18,7 @@ class CategoryController extends BaseController
 
     public function __construct(
         private CategoryRepositoryInterface $categoryRepository,
-    )
-    {
+    ) {
         // $this->middleware('permission:category-list', ['only' => ['index', 'show']]);
         // $this->middleware('permission:category-create', ['only' => ['store']]);
         // $this->middleware('permission:category-edit', ['only' => ['edit', 'update', 'change']]);
@@ -32,7 +31,7 @@ class CategoryController extends BaseController
     public function index()
     {
         $categories = $this->categoryRepository->parentCategory();
-        return view('pages.catalog.services-category.index',compact('categories'));
+        return view('pages.catalog.services-category.index', compact('categories'));
     }
 
     /**
@@ -81,15 +80,15 @@ class CategoryController extends BaseController
         return $this->redirectSuccess(route('catalog.category.index'), 'Category created successfully.');
     }
 
-//    /**
-//     * Display the specified resource.
-//     */
-//    public function show($id)
-//    {
-////        $childCategory = $this->categoryRepository->nestedCategory($id);
-//        $catId = $id;
-//        return view('pages.catalog.services-category.child-category.index', compact('catId'));
-//    }
+    //    /**
+    //     * Display the specified resource.
+    //     */
+    //    public function show($id)
+    //    {
+    ////        $childCategory = $this->categoryRepository->nestedCategory($id);
+    //        $catId = $id;
+    //        return view('pages.catalog.services-category.child-category.index', compact('catId'));
+    //    }
 
 
     /**
@@ -171,7 +170,8 @@ class CategoryController extends BaseController
     }
 
 
-    public function getSubcategories($categoryId){
+    public function getSubcategories($categoryId)
+    {
 
         $subcategory = $this->categoryRepository->nestedCategory($categoryId);
 
@@ -184,7 +184,29 @@ class CategoryController extends BaseController
         return response()->json([
             'subcategories' => []
         ]);
+    }
 
 
+    public function subCategory()
+    {
+        $parentCategories = $this->categoryRepository->activeCategory();
+        return view('pages.catalog.services-category.subCategory', compact('parentCategories'));
+    }
+
+
+    public function subCategoryStore(Request $request)
+    {
+        try {
+            if ($request->parent_id !== null) {
+                foreach ($request->subCategory as $subCat) {
+                    $data['parent_id']  = $request->parent_id;
+                    $data['name'] = $subCat['name'];
+                    $this->categoryRepository->storeOrUpdate($data);
+                }
+            }
+        } catch (\Throwable $th) {
+            return redirect()->back()->withErrors(['msg' => $th->getMessage()]);
+        }
+        return $this->redirectSuccess(route('catalog.category.index'), 'SubCategories Added successfully.');
     }
 }
