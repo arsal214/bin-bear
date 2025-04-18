@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\BlogController;
 use App\Http\Controllers\API\CouponController;
 use App\Http\Controllers\API\ZipCodeController;
+use App\Http\Controllers\API\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +28,13 @@ Route::get('blog/is-popular', [BlogController::class, 'isPopular']);
 
 Route::apiResource('coupons', CouponController::class);
 Route::apiResource('zip-codes', ZipCodeController::class);
+
+Route::apiResource('categories', CategoryController::class);
+Route::get('category-page/{id}', [CategoryController::class, 'serviceCategory']);
+Route::get('allCategories', [CategoryController::class, 'allCategories']);
+Route::get('allList', [CategoryController::class, 'allList']);
+Route::get('subCategoryByID/{id}', [CategoryController::class, 'subCategory']);
+Route::get('category/is-popular', [CategoryController::class, 'isPopular']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

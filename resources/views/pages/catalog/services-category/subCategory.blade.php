@@ -36,7 +36,11 @@
                                                     <div class="row">
                                                         <div class="col-md-3">
                                                             <x-input title="Sub Category" name="subCategory[0][name]" type="text"
-                                                                placeholder="Enter Sub Cate Name" required />
+                                                                placeholder="Enter Sub Category" required />
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <x-input title="Price" name="subCategory[0][price]" type="text"
+                                                                placeholder="Enter Price" required />
                                                         </div>
                                                         <div class="col-md-3">
                                                             <button type="button" class="btn btn-danger remove-sub"
@@ -86,6 +90,9 @@
             <div class="row">
                 <div class="col-md-4">
                     <x-input title="Sub Category" name="subCategory[${subIndex}][name]" type="text" placeholder="Enter Sub Category Name" required />
+                </div>
+                 <div class="col-md-4">
+                    <x-input title="Price" name="subCategory[${subIndex}][price]" type="text" placeholder="Enter Price" required />
                 </div>
                 <div class="col-md-4">
                     <button type="button" class="btn btn-danger remove-sub" data-sub-id="${subIndex}">Remove</button>

@@ -5,6 +5,7 @@
         <div class="row g-2">
 
             <x-input col="6" name="name" :value="$category->name ?? null" :required="true" />
+                <x-input col="6" name="price" :value="$category->price ?? null" :required="true" />
 
             <div>
                 <input type="checkbox" id="showInputCheckbox" onchange="toggleInput()"

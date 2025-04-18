@@ -201,6 +201,7 @@ class CategoryController extends BaseController
                 foreach ($request->subCategory as $subCat) {
                     $data['parent_id']  = $request->parent_id;
                     $data['name'] = $subCat['name'];
+                    $data['price'] = $subCat['price'];
                     $this->categoryRepository->storeOrUpdate($data);
                 }
             }
