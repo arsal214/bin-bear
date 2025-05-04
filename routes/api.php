@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\BlogController;
+use App\Http\Controllers\API\BookingController;
 use App\Http\Controllers\API\CouponController;
 use App\Http\Controllers\API\ZipCodeController;
 use App\Http\Controllers\API\CategoryController;
@@ -28,6 +29,8 @@ Route::get('blog/is-popular', [BlogController::class, 'isPopular']);
 
 Route::apiResource('coupons', CouponController::class);
 Route::apiResource('zip-codes', ZipCodeController::class);
+
+Route::apiResource('bookings', BookingController::class);
 
 Route::apiResource('categories', CategoryController::class);
 Route::get('category-page/{id}', [CategoryController::class, 'serviceCategory']);
