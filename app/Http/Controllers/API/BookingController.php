@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Traits\UploadTrait;
 use App\Models\BookingDetail;
+use App\Models\Setting;
 
 class BookingController extends BaseController
 {
@@ -30,5 +31,15 @@ class BookingController extends BaseController
         }
 
          return $this->sendResponse($booking->load('details'), 'Data Get SuccessFully', 200);
+    }
+
+
+    public function getPrice(){
+        try {
+            $setting = Setting::all();
+        } catch (\Throwable $th) {
+            return $this->sendException([$th->getMessage()]);
+        }
+        return $this->sendResponse($setting, 'Data Get SuccessFully', 200);
     }
 }

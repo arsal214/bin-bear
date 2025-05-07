@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ZipCodeController;
+use App\Http\Controllers\Admin\SettingController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -90,3 +91,13 @@ Route::prefix('pages')->as('pages.')->group(function () {
 
 });
 
+
+/**
+ * Settings Routes.
+ */
+Route::prefix('settings')->as('settings.')->group(function () {
+    Route::controller(SettingController::class)->group(function () {
+        Route::post('store', 'store')->name('store');
+        Route::get('admin', 'admin')->name('admin');
+    });
+});

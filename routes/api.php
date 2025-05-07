@@ -31,6 +31,7 @@ Route::apiResource('coupons', CouponController::class);
 Route::apiResource('zip-codes', ZipCodeController::class);
 
 Route::apiResource('bookings', BookingController::class);
+Route::get('getPrice', [BookingController::class, 'getPrice']);
 
 Route::apiResource('categories', CategoryController::class);
 Route::get('category-page/{id}', [CategoryController::class, 'serviceCategory']);

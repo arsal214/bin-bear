@@ -94,6 +94,14 @@
                     
                 </x-nav-item>
 
+                
+                
+
+                    <x-nav-item active="settings.*" icon="gear-six" title="Settings" :submenu="true">
+                        <x-nav-item route="settings.admin" title="DrumpSet"/>
+                    </x-nav-item>
+                
+
             
 
             </ul>
