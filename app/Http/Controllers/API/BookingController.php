@@ -25,7 +25,7 @@ class BookingController extends BaseController
                 $bookingDetails->category_id = $detail['category_id'];
                 $bookingDetails->subcategory_id = $detail['subcategory_id'];
                 $data['image'] = $request->hasFile('image') ? $this->uploadFile($request->file('image'), 'categories') : 'https://png.pngtree.com/element_our/20200610/ourmid/pngtree-character-default-avatar-image_2237203.jpg';
-                $bookingDetails->subcategory_id = $data['image'];
+                $bookingDetails->image = $data['image'];
                 $bookingDetails->save();
             }
         }
