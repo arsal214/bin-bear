@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('booking_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('booking_id')->nullable()->constrained('categories')->onDelete('cascade');
+            $table->foreignId('booking_id')->nullable()->constrained('bookings')->onDelete('cascade');
             $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('cascade');
             $table->foreignId('subcategory_id')->nullable()->constrained('categories')->onDelete('cascade');
             $table->string('image')->nullable();
