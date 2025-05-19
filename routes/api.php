@@ -7,6 +7,7 @@ use App\Http\Controllers\API\BookingController;
 use App\Http\Controllers\API\CouponController;
 use App\Http\Controllers\API\ZipCodeController;
 use App\Http\Controllers\API\CategoryController;
+use App\Http\Controllers\API\StripeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +40,12 @@ Route::get('allCategories', [CategoryController::class, 'allCategories']);
 Route::get('allList', [CategoryController::class, 'allList']);
 Route::get('subCategoryByID/{id}', [CategoryController::class, 'subCategory']);
 Route::get('category/is-popular', [CategoryController::class, 'isPopular']);
+
+
+    /* ------------------------- Stripe  Routes ------------------------ */
+
+    Route::post('payment-key-generate', [StripeController::class, 'paymentKey']);
+    Route::post('process-payment', [StripeController::class, 'processStripePayment']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
