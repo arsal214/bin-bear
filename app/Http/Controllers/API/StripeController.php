@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
+use App\Models\StripePayments;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -91,6 +92,22 @@ class StripeController extends BaseController
                 'off_session' => true,
                 'confirm' => true,
                 'description' => 'One-time payment for ' . $product->name,
+            ]);
+
+
+            $stripeSubscription = StripePayments::create([
+                'user_id' => auth()->user()->id ?? null,
+                'product_name' => $request->product_name,
+                'customer_email' => $request->email,
+                // 'coupon_id' => $nautaesPlan->coupon->id ?? null,
+                'currency' => 'USD',
+                'last_4_digit' => $paymentMethod->card->last4,
+                'card_exp_month' => $paymentMethod->card->exp_month,
+                'card_exp_year' => $paymentMethod->card->exp_year,
+                'price' => $request->price,
+                'stripe_payment_id' => $paymentIntent->id,
+                 'stripe_customer_id' => $customer->id,
+                'stripe_response' => json_encode($request->payment_data),
             ]);
 
             DB::commit();
