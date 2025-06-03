@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
             $table->foreignId('coupon_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('product_name')->nullable();
-            $table->foreignId('customer_email')->nullable();
+            $table->string('product_name')->nullable();
+            $table->string('customer_email')->nullable();
             $table->string('stripe_customer_id')->nullable();
             $table->string('price')->nullable();
             $table->string('stripe_payment_id')->nullable();
