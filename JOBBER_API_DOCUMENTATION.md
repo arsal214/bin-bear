@@ -1,19 +1,10 @@
 # Jobber API Integration Documentation
 
 ## Table of Contents
-- [Authentication](#authentication)
 - [Jobber Integration](#jobber-integration)
 - [Authentication Requirements](#authentication-requirements)
 - [Base URL](#base-url)
 - [Response Format](#response-format)
-
-## Authentication
-
-### Login
-- **Endpoint:** `POST /api/login`
-- **Controller:** `AuthController@login`
-- **Purpose:** Authenticate user and get access token
-- **Authentication:** Not required
 
 ## Jobber Integration
 
