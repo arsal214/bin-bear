@@ -1,4 +1,4 @@
-# Jobber API Integration Documentation
+# Jobber API Integration Documentation For BinBear
 
 ## Table of Contents
 - [Login & Authentication](#login--authentication)
