@@ -8,6 +8,9 @@ use App\Http\Controllers\API\CouponController;
 use App\Http\Controllers\API\ZipCodeController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\StripeController;
+use App\Http\Controllers\API\JobberController;
+use App\Http\Controllers\API\JobberOAuthController;
+use App\Http\Controllers\API\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -42,11 +45,29 @@ Route::get('subCategoryByID/{id}', [CategoryController::class, 'subCategory']);
 Route::get('category/is-popular', [CategoryController::class, 'isPopular']);
 
 
-    /* ------------------------- Stripe  Routes ------------------------ */
+/* ------------------------- Stripe  Routes ------------------------ */
 
-    Route::post('payment-key-generate', [StripeController::class, 'paymentKey']);
-    Route::post('process-payment', [StripeController::class, 'processStripePayment']);
+Route::post('payment-key-generate', [StripeController::class, 'paymentKey']);
+Route::post('process-payment', [StripeController::class, 'processStripePayment']);
+
+// Authentication route
+Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    
+    // OAuth routes
+    Route::get('jobber/auth', [JobberOAuthController::class, 'redirectToJobber']);
+    Route::get('jobber/callback', [JobberOAuthController::class, 'handleCallback']);
+    Route::post('jobber/refresh', [JobberOAuthController::class, 'refreshToken']);
+    
+    // API routes (now require access_token)
+    Route::post('create-client', [JobberController::class, 'createClient']);
+    Route::get('clients/{jobberClientId}', [JobberController::class, 'getClient']);
+    Route::get('get-available-times', [JobberController::class, 'getAvailableTimes']);
+});
+
+Route::get('jobber/code-binbear', [JobberOAuthController::class, 'CodeBinBear']);

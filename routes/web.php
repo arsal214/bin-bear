@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Frontend\PagesController;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,11 @@ use App\Http\Controllers\Frontend\PagesController;
 Route::get('/', function(){
     return view('welcome');
 });
+
+
+// Route::get('/jobber/code-binbear', function(Request $request){
+//     return $request->all();
+// });
 
 
 
