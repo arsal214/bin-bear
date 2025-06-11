@@ -84,6 +84,8 @@
                 @endcanany
 
 
+                <x-nav-item route="bookings.index" active="bookings.*" icon="gift" title="Booking List"/>
+
 
 
 

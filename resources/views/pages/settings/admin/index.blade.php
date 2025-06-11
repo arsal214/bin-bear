@@ -15,7 +15,22 @@
                             <li class="nav-item" role="presentation">
                                 <a href="#general-tab" class="nav-link active" data-bs-toggle="tab" aria-selected="true"
                                     role="tab">
-                                    General
+                                    Truck Price
+                                </a>
+                            </li>
+
+
+                            <li class="nav-item" role="presentation">
+                                <a href="#appartment-tab" class="nav-link" data-bs-toggle="tab" aria-selected="true"
+                                    role="tab">
+                                    Apartment Trash 
+                                </a>
+                            </li>
+
+                             <li class="nav-item" role="presentation">
+                                <a href="#drumpster-tab" class="nav-link " data-bs-toggle="tab" aria-selected="true"
+                                    role="tab">
+                                    Drumpster Size 
                                 </a>
                             </li>
 
@@ -24,6 +39,13 @@
                         <div class="tab-content flex-lg-fill">
                             <div class="tab-pane fade active show" id="general-tab" role="tabpanel">
                                 @include('pages.settings.admin.include.general')
+                            </div>
+                             <div class="tab-pane" id="appartment-tab" role="tabpanel">
+                                @include('pages.settings.admin.include.appartment')
+                            </div>
+
+                             <div class="tab-pane" id="drumpster-tab" role="tabpanel">
+                                @include('pages.settings.admin.include.drumpster')
                             </div>
                         </div>
                     </div>

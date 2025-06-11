@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ZipCodeController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\BookingController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -77,6 +78,13 @@ Route::resource('coupons', CouponController::class)->except('show');
  */
 Route::get('zip-codes/list', 'ZipCodeController@list')->name('zip-codes.list');
 Route::resource('zip-codes', ZipCodeController::class)->except('show');
+
+
+/**
+ * Zip Routes.
+ */
+Route::get('bookings/list', 'BookingController@list')->name('bookings.list');
+Route::resource('bookings', BookingController::class);
 
 
 

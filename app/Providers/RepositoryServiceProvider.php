@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Interfaces\{BlogRepositoryInterface,
+    BookingRepositoryInterface,
     CategoryRepositoryInterface,
     PermissionRepositoryInterface,
     RoleRepositoryInterface,
@@ -14,6 +15,7 @@ use App\Repositories\{
     PermissionRepository,
     RoleRepository,
     BlogRepository,
+    BookingRepository,
     CategoryRepository,
     CouponRepository,
     UserRepository,
@@ -34,6 +36,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(CouponRepositoryInterface::class, CouponRepository::class);
         $this->app->bind(ZipCodeRepositoryInterface::class, ZipCodeRepository::class);
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
+        $this->app->bind(BookingRepositoryInterface::class, BookingRepository::class);
 
     }
 
