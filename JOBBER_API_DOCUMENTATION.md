@@ -7,6 +7,9 @@
   - [Create Client](#create-client)
   - [Get Client](#get-client)
   - [Get Available Times](#get-available-times)
+  - [Create Job Draft](#create-job-draft)
+  - [Get Client Properties](#get-client-properties)
+  - [Create Property](#create-property)
 - [Base URL](#base-url)
 - [Response Format](#response-format)
 
@@ -140,6 +143,128 @@ To use Jobber features, you must connect your Jobber account via OAuth. This is 
 - **Notes:**
   - The Bearer token must belong to a user who has authorized Jobber.
   - The available slots are calculated based on scheduled jobs in Jobber.
+
+### Create Job Draft
+- **Endpoint:** `POST /api/jobber/create-job-draft`
+- **Purpose:** Create a draft job in Jobber
+- **Headers:**
+  - `Authorization: Bearer <your_bearer_token>`
+- **Request Body:**
+  ```json
+  {
+    "jobber_client_id": "Z2lkOi8vSm9iYmVyL0NsaWVudC8xMDk3NDAwNjg=",
+    "jobber_property_id": "Z2lkOi8vSm9iYmVyL1Byb3BlcnR5LzExNzcxNTQ3NQ==",
+    "title": "Test Time Slot Draft Job",
+    "description": "This is a test job",
+    "start_at": "2025-08-20T09:00:00Z",
+    "end_at": "2025-08-20T10:00:00Z",
+    "price": 100.00
+  }
+  ```
+- **Response (Success):**
+  ```json
+  {
+    "message": "Job draft created successfully",
+    "job": {
+      "id": "Z2lkOi8vSm9iYmVyL0pvYi8xMTY4MjQzNzM=",
+      "title": "Test Time Slot Draft Job",
+      "jobNumber": 4,
+      "instructions": "This is a test job",
+      "startAt": "2025-08-20T09:00:00Z",
+      "endAt": "2025-08-20T10:00:00Z",
+      "jobStatus": "unscheduled"
+    }
+  }
+  ```
+- **Response (Error):**
+  ```json
+  {
+    "message": "Jobber not authorized for this user."
+  }
+  ```
+- **Notes:**
+  - All fields except `description` and `price` are required
+  - `start_at` and `end_at` must be valid ISO 8601 datetime strings
+  - `end_at` must be after `start_at`
+  - `price` must be a non-negative number if provided
+
+### Get Client Properties
+- **Endpoint:** `GET /api/jobber/client-properties/{jobberClientId}`
+- **Purpose:** Get all properties associated with a client in Jobber
+- **Headers:**
+  - `Authorization: Bearer <your_bearer_token>`
+- **Response (Success):**
+  ```json
+  {
+    "message": "Client properties fetched successfully",
+    "properties": [
+      {
+        "id": "Z2lkOi8vSm9iYmVyL1Byb3BlcnR5LzExNzcxNTQ3NQ==",
+        "name": "Main Property",
+        "address": {
+          "street": "123 Main St",
+          "city": "Toronto",
+          "province": "ON",
+          "postalCode": "M5V 2H1",
+          "country": "CA"
+        }
+      }
+    ]
+  }
+  ```
+- **Response (Error):**
+  ```json
+  {
+    "message": "Jobber not authorized for this user."
+  }
+  ```
+- **Notes:**
+  - The client ID must be a valid Jobber client ID
+  - Returns an array of properties with their addresses
+
+### Create Property
+- **Endpoint:** `POST /api/jobber/create-property`
+- **Purpose:** Create a new property for a client in Jobber
+- **Headers:**
+  - `Authorization: Bearer <your_bearer_token>`
+- **Request Body:**
+  ```json
+  {
+    "jobber_client_id": "Z2lkOi8vSm9iYmVyL0NsaWVudC8xMDk3NDAwNjg=",
+    "name": "Main Property",
+    "street": "123 Main St",
+    "city": "Toronto",
+    "province": "ON",
+    "postal_code": "M5V 2H1",
+    "country": "CA"
+  }
+  ```
+- **Response (Success):**
+  ```json
+  {
+    "message": "Property created successfully",
+    "property": {
+      "id": "Z2lkOi8vSm9iYmVyL1Byb3BlcnR5LzExNzcxNTQ3NQ==",
+      "address": {
+        "street": "123 Main St",
+        "city": "Toronto",
+        "province": "ON",
+        "postalCode": "M5V 2H1",
+        "country": "CA"
+      }
+    }
+  }
+  ```
+- **Response (Error):**
+  ```json
+  {
+    "message": "Jobber not authorized for this user."
+  }
+  ```
+- **Notes:**
+  - All fields except `name` are required
+  - The client ID must be a valid Jobber client ID
+  - Address fields must be valid according to Jobber's requirements
 
 ---
 

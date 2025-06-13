@@ -22,7 +22,7 @@ class JobberOAuthController extends Controller
         $this->clientId = "2dc3079c-8a3d-4810-a95c-4678cc67e486";
         $this->clientSecret = "c359ae51c968c5a7acfcb2306f60d00aad55043de66b7f57625435ceb8a3ab67";
         // $this->redirectUri = env('JOBBER_REDIRECT_URI', 'http://binbear-backend-laragon.test/api/jobber/callback');
-        $this->redirectUri = env('JOBBER_REDIRECT_URI', 'https://binbearjunk.com/api/jobber/code-binbear');
+        $this->redirectUri = env('JOBBER_REDIRECT_URI', 'https://backend.binbearjunk.com/api/jobber/code-binbear');
     }
 
     /**

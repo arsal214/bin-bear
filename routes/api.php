@@ -67,7 +67,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // API routes (now require access_token)
     Route::post('create-client', [JobberController::class, 'createClient']);
     Route::get('clients/{jobberClientId}', [JobberController::class, 'getClient']);
+    Route::get('clients/{jobberClientId}/properties', [JobberController::class, 'getClientProperties']);
     Route::get('get-available-times', [JobberController::class, 'getAvailableTimes']);
+    Route::post('create-job-draft', [JobberController::class, 'createJobDraft']);
+    Route::post('/clients/{jobberClientId}/properties', [JobberController::class, 'createProperty']);
+
+
+    Route::get('/jobber/schema/property-create-input', [JobberController::class, 'introspectJobberSchema']);
 });
 
 Route::get('jobber/code-binbear', [JobberOAuthController::class, 'CodeBinBear']);
