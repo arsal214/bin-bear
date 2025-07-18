@@ -11,4 +11,13 @@ class JobberOAuthToken extends Model
 
     protected $table = 'jobber_o_auth_tokens';
     protected $guarded = [];
+    
+    protected $casts = [
+        'expires_at' => 'datetime',
+    ];
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

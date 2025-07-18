@@ -8,8 +8,10 @@ use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 use App\Models\JobberClient; // Import the JobberClient model
 use App\Models\JobberOAuthToken; // Import the JobberOAuthToken model
+use App\Models\CompanyJobberToken; // Import the CompanyJobberToken model
 use Carbon\Carbon; // Import Carbon for timestamps
 use App\Models\JobberJob; // Import the JobberJob model
+use Illuminate\Support\Facades\Http;
 
 class JobberController extends Controller
 {
@@ -55,6 +57,44 @@ class JobberController extends Controller
 
         // Access token is still valid
         return $jobberToken->access_token;
+    }
+
+    /**
+     * Get a valid company Jobber access token, refreshing if necessary.
+     *
+     * @return string|null The valid access token, or null if not available.
+     */
+    private function getValidCompanyAccessToken()
+    {
+        $companyToken = CompanyJobberToken::getActiveToken();
+
+        if (!$companyToken) {
+            return null; // No company token found
+        }
+
+        // Check if the access token is expired
+        if ($companyToken->expires_at <= Carbon::now()) {
+            Log::info('Company Jobber access token expired. Attempting to refresh.');
+            // Token is expired, attempt to refresh
+            $refreshedTokenData = $this->refreshJobberToken($companyToken->refresh_token);
+
+            if (isset($refreshedTokenData['access_token'])) {
+                // Update the stored token
+                $companyToken->update([
+                    'access_token' => $refreshedTokenData['access_token'],
+                    'refresh_token' => $refreshedTokenData['refresh_token'] ?? $companyToken->refresh_token,
+                    'expires_at' => Carbon::now()->addSeconds($refreshedTokenData['expires_in'] ?? 0),
+                ]);
+                Log::info('Company Jobber access token refreshed and updated.');
+                return $refreshedTokenData['access_token'];
+            } else {
+                Log::error('Failed to refresh company Jobber access token.', ['response' => $refreshedTokenData]);
+                return null; // Refresh failed
+            }
+        }
+
+        // Access token is still valid
+        return $companyToken->access_token;
     }
 
     /**
@@ -291,6 +331,184 @@ class JobberController extends Controller
             
             return response()->json([
                 'message' => 'Error creating client in Jobber',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Create client using company Jobber account (centralized approach)
+     */
+    public function createClientForCompany(Request $request)
+    {
+        // Extract client data from the request
+        $clientData = $request->validate([
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'email' => 'required|email',
+            'phone' => 'required|string',
+        ]);
+
+        // Get company access token instead of user token
+        $accessToken = $this->getValidCompanyAccessToken();
+
+        if (!$accessToken) {
+            return response()->json([
+                'message' => 'Company Jobber account not authorized. Please complete company OAuth setup.',
+                'next_step' => 'Call GET /api/company/jobber/auth to authorize BinBear main account'
+            ], 403);
+        }
+
+        $jobberApiUrl = 'https://api.getjobber.com/api/graphql';
+
+        // GraphQL mutation to create a client
+        $graphqlMutation = [
+            'query' => '
+                mutation CreateClient($input: ClientCreateInput!) {
+                    clientCreate(input: $input) {
+                        client {
+                            id
+                            firstName
+                            lastName
+                            emails {
+                                address
+                            }
+                        }
+                        userErrors {
+                            message
+                        }
+                    }
+                }
+            ',
+            'variables' => [
+                'input' => [
+                    'firstName' => $clientData['first_name'],
+                    'lastName' => $clientData['last_name'],
+                    'emails' => [
+                        [
+                            'address' => $clientData['email'],
+                            'description' => 'MAIN',
+                            'primary' => true
+                        ]
+                    ],
+                    'phones' => [
+                        [
+                            'number' => $clientData['phone'],
+                            'description' => 'MAIN',
+                            'primary' => true
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $client = new Client();
+
+        try {
+            Log::info('Creating client in BinBear company Jobber account:', $graphqlMutation);
+
+            $response = $client->post($jobberApiUrl, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'application/json',
+                    'X-JOBBER-GRAPHQL-VERSION' => '2025-01-20',
+                ],
+                'json' => $graphqlMutation,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $responseData = json_decode($response->getBody()->getContents(), true);
+
+            Log::info('Received response from BinBear Jobber account:', [
+                'status_code' => $statusCode,
+                'response' => $responseData
+            ]);
+
+            // Check for GraphQL errors
+            if (isset($responseData['errors']) && !empty($responseData['errors'])) {
+                return response()->json([
+                    'message' => 'GraphQL errors occurred',
+                    'errors' => $responseData['errors']
+                ], 400);
+            }
+
+            // Check for user errors in the mutation response
+            if (isset($responseData['data']['clientCreate']['userErrors']) && 
+                !empty($responseData['data']['clientCreate']['userErrors'])) {
+                return response()->json([
+                    'message' => 'Client creation failed',
+                    'errors' => $responseData['data']['clientCreate']['userErrors']
+                ], 400);
+            }
+
+            // Success case
+            if (isset($responseData['data']['clientCreate']['client'])) {
+                $createdClient = $responseData['data']['clientCreate']['client'];
+
+                // ** Save the client data to your database **
+                try {
+                    $user = auth()->user(); // Get the requesting user
+
+                    if ($user) {
+                        JobberClient::create([
+                            'user_id' => $user->id,
+                            'jobber_client_id' => $createdClient['id'],
+                            'first_name' => $createdClient['firstName'] ?? null,
+                            'last_name' => $createdClient['lastName'] ?? null,
+                            'email' => $createdClient['emails'][0]['address'] ?? null,
+                        ]);
+                        Log::info('Client created in BinBear main Jobber account and linked to user.', [
+                            'jobber_client_id' => $createdClient['id'],
+                            'requesting_user_id' => $user->id,
+                            'company_account' => 'contact@binbears.com'
+                        ]);
+                    }
+
+                } catch (\Exception $dbException) {
+                    Log::error('Error saving client data to database:', [
+                        'error' => $dbException->getMessage(),
+                        'jobber_client_id' => $createdClient['id'],
+                        'trace' => $dbException->getTraceAsString()
+                    ]);
+                }
+
+                return response()->json([
+                    'message' => 'Client created successfully in BinBear main Jobber account',
+                    'company_account' => 'contact@binbears.com',
+                    'jobber_client_id' => $createdClient['id'],
+                    'client_data' => $createdClient
+                ], 201);
+            }
+
+            return response()->json([
+                'message' => 'Unexpected response from Jobber API',
+                'response' => $responseData
+            ], 500);
+
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            $statusCode = $e->getResponse()->getStatusCode();
+            $errorBody = $e->getResponse()->getBody()->getContents();
+            
+            Log::error('Client error from Jobber API:', [
+                'status_code' => $statusCode,
+                'error_body' => $errorBody,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'message' => 'Client error when creating client in Jobber',
+                'status_code' => $statusCode,
+                'error' => $errorBody
+            ], $statusCode);
+            
+        } catch (\Exception $e) {
+            Log::error('General error creating client in BinBear company Jobber account:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'message' => 'Error creating client in BinBear company Jobber account',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -664,7 +882,7 @@ class JobberController extends Controller
                 'headers' => [
                     'Authorization' => 'Bearer ' . $accessToken,
                     'Content-Type' => 'application/json',
-                    'X-JOBBER-GRAPHQL-VERSION' => '2025-04-16', // Updated to working version
+                    'X-JOBBER-GRAPHQL-VERSION' => '2025-01-20', // Use consistent API version
                 ],
                 'json' => $graphqlMutation,
             ]);
@@ -972,6 +1190,334 @@ class JobberController extends Controller
         }
     }
 
+    public function createInvoice(Request $request)
+    {
+        $accessToken = auth()->user()->jobber_access_token;
+        $jobId = $request->input('job_id');
+        
+        // Debug: Log the job ID being used
+        Log::info('Creating invoice for job ID: ' . $jobId);
+        
+        // Decode the job ID to verify it's properly formatted
+        $decodedId = base64_decode($jobId);
+        Log::info('Decoded job ID: ' . $decodedId);
+        
+        // First, verify the job exists and get its details
+        // Use proper GraphQL query structure
+        $jobQuery = [
+            'query' => 'query GetJob($jobId: ID!) {
+                job(id: $jobId) {
+                    id
+                    jobNumber
+                    title
+                    client {
+                        id
+                        name
+                    }
+                    status
+                }
+            }',
+            'variables' => [
+                'jobId' => $jobId
+            ]
+        ];
+        
+        $jobResponse = Http::withToken($accessToken)
+            ->withHeaders([
+                'X-JOBBER-GRAPHQL-VERSION' => '2023-03-15', // Use a stable version
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])
+            ->post('https://api.getjobber.com/api/graphql', $jobQuery);
+        
+        // Log the full response for debugging
+        Log::info('Job query response status: ' . $jobResponse->status());
+        Log::info('Job query response: ', $jobResponse->json());
+        
+        if (!$jobResponse->successful()) {
+            return response()->json([
+                'error' => 'Failed to fetch job details',
+                'status_code' => $jobResponse->status(),
+                'response' => $jobResponse->json(),
+                'job_id' => $jobId,
+                'headers_sent' => [
+                    'X-JOBBER-GRAPHQL-VERSION' => '2023-03-15',
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ]
+            ], $jobResponse->status());
+        }
+        
+        $jobData = $jobResponse->json();
+        
+        // Check for GraphQL errors
+        if (isset($jobData['errors'])) {
+            return response()->json([
+                'error' => 'GraphQL Error when fetching job',
+                'errors' => $jobData['errors'],
+                'job_id' => $jobId
+            ], 400);
+        }
+        
+        // Check if job exists
+        if (!isset($jobData['data']['job']) || $jobData['data']['job'] === null) {
+            return response()->json([
+                'error' => 'Job not found or invalid job ID',
+                'job_id' => $jobId,
+                'decoded_id' => $decodedId ?? 'Invalid base64',
+                'full_response' => $jobData
+            ], 404);
+        }
+        
+        $job = $jobData['data']['job'];
+        
+        // Create invoice with proper mutation structure
+        $invoiceSubject = "Invoice for Service - " . $job['title'];
+        $mutationData = [
+            'query' => 'mutation CreateInvoice($input: InvoiceCreateInput!) {
+                invoiceCreate(input: $input) {
+                    invoice {
+                        id
+                        invoiceNumber
+                        subject
+                        total {
+                            amount
+                            currency
+                        }
+                        status
+                    }
+                    userErrors {
+                        field
+                        message
+                    }
+                }
+            }',
+            'variables' => [
+                'input' => [
+                    'jobId' => $jobId,
+                    'subject' => $invoiceSubject,
+                    'lineItems' => [
+                        [
+                            'name' => 'Cleaning Service',
+                            'quantity' => 1,
+                            'unitPrice' => [
+                                'amount' => '100.00',
+                                'currency' => 'USD' // or your preferred currency
+                            ],
+                            'description' => 'Professional cleaning service'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        
+        $response = Http::withToken($accessToken)
+            ->withHeaders([
+                'X-JOBBER-GRAPHQL-VERSION' => '2023-03-15',
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])
+            ->post('https://api.getjobber.com/api/graphql', $mutationData);
+        
+        $responseData = $response->json();
+        
+        // Log the invoice creation response
+        Log::info('Invoice creation response status: ' . $response->status());
+        Log::info('Invoice creation response: ', $responseData);
+        
+        // Check for GraphQL errors
+        if (isset($responseData['errors'])) {
+            return response()->json([
+                'error' => 'GraphQL Error during invoice creation',
+                'errors' => $responseData['errors']
+            ], 400);
+        }
+        
+        // Check for user errors
+        if (isset($responseData['data']['invoiceCreate']['userErrors']) && 
+            !empty($responseData['data']['invoiceCreate']['userErrors'])) {
+            return response()->json([
+                'error' => 'Validation Error',
+                'userErrors' => $responseData['data']['invoiceCreate']['userErrors']
+            ], 400);
+        }
+        
+        // Get created invoice details
+        $invoice = $responseData['data']['invoiceCreate']['invoice'] ?? null;
+        
+        if ($invoice && isset($invoice['id'])) {
+            // Automatically send the invoice
+            $sendMutationData = [
+                'query' => 'mutation SendInvoice($input: InvoiceSendInput!) {
+                    invoiceSend(input: $input) {
+                        invoice {
+                            id
+                            status
+                            sentAt
+                        }
+                        userErrors {
+                            field
+                            message
+                        }
+                    }
+                }',
+                'variables' => [
+                    'input' => [
+                        'invoiceId' => $invoice['id']
+                    ]
+                ]
+            ];
+            
+            $sendResponse = Http::withToken($accessToken)
+                ->withHeaders([
+                    'X-JOBBER-GRAPHQL-VERSION' => '2023-03-15',
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ])
+                ->post('https://api.getjobber.com/api/graphql', $sendMutationData);
+            
+            $sendData = $sendResponse->json();
+            
+            return response()->json([
+                'status' => 'Invoice created and sent successfully',
+                'job' => $job,
+                'invoice' => $invoice,
+                'send_status' => $sendData['data']['invoiceSend'] ?? null,
+                'email_sent' => isset($sendData['data']['invoiceSend']['invoice']['sentAt'])
+            ]);
+        }
+        
+        return response()->json([
+            'status' => 'Invoice created but not sent',
+            'job' => $job,
+            'invoice' => $invoice,
+            'raw_response' => $responseData
+        ]);
+    }
+    
+    // Updated test method with proper query structure
+    public function testJobberConnection(Request $request)
+    {
+        $accessToken = auth()->user()->jobber_access_token;
+
+
+
+        //...
+        $testQueryData = [
+            'query' => '
+                query {
+                jobs(first: 3) {
+                    nodes {
+                    id
+                    title
+                    status
+                    }
+                }
+            }'
+
+        ];
+
+        // $response = Http::withToken($accessToken)
+        //     ->withHeaders()
+        //     ->send('POST', 'https://api.getjobber.com/api/graphql',);
+        //...
+        
+        
+        $response = Http::withToken($accessToken)
+            ->withHeaders([
+                'X-JOBBER-GRAPHQL-VERSION' => '2023-03-15',
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])
+            ->send('POST', 'https://api.getjobber.com/api/graphql', $testQueryData);
+        
+        $responseData = $response->json();
+        
+        return response()->json([
+            'status_code' => $response->status(),
+            'success' => $response->successful(),
+            'response' => $responseData,
+            'token_preview' => substr($accessToken, 0, 10) . '...',
+            'headers_sent' => [
+                'X-JOBBER-GRAPHQL-VERSION' => '2023-03-15',
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ]
+        ]);
+    }
+    
+    // Additional debug method to test authentication
+    public function debugJobberAuth(Request $request)
+    {
+        $accessToken = auth()->user()->jobber_access_token;
+        
+        // Test with a very simple query
+        $simpleQuery = [
+            'query' => 'query { 
+                account { 
+                    id 
+                    name 
+                } 
+            }'
+        ];
+        
+        $response = Http::withToken($accessToken)
+            ->withHeaders([
+                'X-JOBBER-GRAPHQL-VERSION' => '2023-03-15',
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])
+            ->post('https://api.getjobber.com/api/graphql', $simpleQuery);
+        
+        return response()->json([
+            'auth_test' => [
+                'status_code' => $response->status(),
+                'successful' => $response->successful(),
+                'response' => $response->json(),
+                'token_length' => strlen($accessToken),
+                'token_starts_with' => substr($accessToken, 0, 4),
+            ]
+        ]);
+    }
+    
+    // Keep the webhook function as is
+    public function paymentSuccessWebhook(Request $request)
+    {
+        // Verify webhook signature (important for security)
+        $signature = $request->header('X-Jobber-Signature');
+        $payload = $request->getContent();
+        
+        // You should verify the signature here using your webhook secret
+        // $expectedSignature = hash_hmac('sha256', $payload, config('jobber.webhook_secret'));
+        // if (!hash_equals($expectedSignature, $signature)) {
+        //     return response()->json(['error' => 'Invalid signature'], 401);
+        // }
+        
+        Log::info('Jobber payment webhook received', [
+            'event_type' => $request->input('event'),
+            'payment_id' => $request->input('data.payment.id'),
+            'invoice_id' => $request->input('data.invoice.id'),
+            'amount' => $request->input('data.payment.amount'),
+        ]);
+        
+        // Handle different webhook events
+        $eventType = $request->input('event');
+        
+        switch ($eventType) {
+            case 'payment.created':
+            case 'payment.updated':
+                $invoiceId = $request->input('data.invoice.id');
+                $paymentAmount = $request->input('data.payment.amount');
+                
+                // Your business logic here
+                // Example: Assign employee after payment
+                // $this->assignEmployeeToJob($invoiceId);
+                
+                break;
+        }
+        
+        return response()->json(['message' => 'Webhook processed'], 200);
+    }
 
 
 
@@ -1701,6 +2247,155 @@ class JobberController extends Controller
                 }
             '
         ];
+    }
+
+    /**
+     * Debug method to check OAuth status
+     */
+    public function checkOAuthStatus(Request $request)
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        $jobberToken = JobberOAuthToken::where('user_id', $user->id)->first();
+        
+        if (!$jobberToken) {
+            return response()->json([
+                'oauth_status' => 'NOT_AUTHORIZED',
+                'message' => 'No Jobber OAuth token found. Please complete OAuth flow first.',
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'next_step' => 'Call GET /api/jobber/auth to get authorization URL'
+            ]);
+        }
+        
+        return response()->json([
+            'oauth_status' => 'AUTHORIZED',
+            'message' => 'Jobber OAuth token found',
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'token_expires_at' => $jobberToken->expires_at,
+            'token_expired' => $jobberToken->expires_at <= Carbon::now(),
+            'has_refresh_token' => !empty($jobberToken->refresh_token),
+            'next_step' => 'Ready to create clients, jobs, and invoices'
+        ]);
+    }
+
+    /**
+     * Debug endpoint to check all OAuth tokens in database
+     */
+    public function debugAllTokens(Request $request)
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        // Get all OAuth tokens to see what's in the database
+        $allTokens = JobberOAuthToken::with('user:id,first_name,last_name,email')
+            ->get()
+            ->map(function($token) {
+                return [
+                    'id' => $token->id,
+                    'user_id' => $token->user_id,
+                    'user_email' => $token->user->email ?? 'Unknown',
+                    'user_name' => ($token->user->first_name ?? '') . ' ' . ($token->user->last_name ?? ''),
+                    'expires_at' => $token->expires_at,
+                    'expired' => $token->expires_at <= Carbon::now(),
+                    'has_refresh_token' => !empty($token->refresh_token)
+                ];
+            });
+
+        return response()->json([
+            'current_user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'name' => $user->first_name . ' ' . $user->last_name
+            ],
+            'all_oauth_tokens' => $allTokens,
+            'total_tokens' => $allTokens->count()
+        ]);
+    }
+
+    /**
+     * Debug method to check which Jobber account we're connected to
+     */
+    public function checkConnectedAccount(Request $request)
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        $accessToken = $this->getValidAccessToken();
+        
+        if (!$accessToken) {
+            return response()->json(['message' => 'Jobber not authorized for this user.'], 403);
+        }
+
+        $jobberApiUrl = 'https://api.getjobber.com/api/graphql';
+
+        // Simple query to get account info
+        $graphqlQuery = [
+            'query' => '
+                query GetAccountInfo {
+                    account {
+                        id
+                        name
+                        email
+                        companyName
+                    }
+                    clients(first: 5) {
+                        nodes {
+                            id
+                            firstName
+                            lastName
+                            emails {
+                                address
+                            }
+                        }
+                    }
+                }
+            '
+        ];
+
+        $client = new Client();
+
+        try {
+            $response = $client->post($jobberApiUrl, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'application/json',
+                    'X-JOBBER-GRAPHQL-VERSION' => '2025-01-20',
+                ],
+                'json' => $graphqlQuery,
+            ]);
+
+            $responseData = json_decode($response->getBody()->getContents(), true);
+
+            return response()->json([
+                'message' => 'Connected Jobber account info',
+                'laravel_user' => [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                    'name' => $user->first_name . ' ' . $user->last_name
+                ],
+                'jobber_account' => $responseData['data']['account'] ?? null,
+                'recent_clients' => $responseData['data']['clients']['nodes'] ?? [],
+                'errors' => $responseData['errors'] ?? null
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error checking connected account',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
